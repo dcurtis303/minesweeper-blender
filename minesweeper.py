@@ -1,5 +1,4 @@
 import bpy
-import bmesh
 from random import randint, seed
 
 clean_scene = False
