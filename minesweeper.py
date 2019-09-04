@@ -5,6 +5,7 @@ from random import randint, seed
 clean_scene = False
 show_entries = False
 
+
 # game_board = [ 100, 100, 1000 ]
 # game_board = [ 30, 16, 99 ]
 game_board = [ 15, 8, 32 ]
@@ -206,7 +207,7 @@ def MatchPatterns():
                                 t2_cnt = ListAdjacent_Unrevealed(ip, jp, 2)
                                 match_cnt = CompareLAULists(t1_cnt, t2_cnt)
                                 if match_cnt == t1_cnt:
-                                    if grid[ip][jp][gm] == m2_cnt + 1
+                                    if grid[ip][jp][gm] == m2_cnt + 1:
                                         RevealLAUList2(t1_cnt, t2_cnt)
 
 
@@ -379,20 +380,20 @@ def Scene():
     print("Creating tile objects...")
     CreateTileObjects()
 
-    grid[9][5] ^= b_blank
+    grid[14][0] ^= b_blank
 
-#    for i in range(5):
-    print("Matching blanks...")
-    MatchBlank()
-    
-    print("Matching Unrevealed...")
-    MatchUnrevealed()
+    for i in range(14):
+        print("Matching blanks...")
+        MatchBlank()
+        
+        print("Matching Unrevealed...")
+        MatchUnrevealed()
 
-    print("Matching flagged...")
-    MatchFlagged()
-    
-    print("Matching patterns...")
-    MatchPatterns()
+        print("Matching flagged...")
+        MatchFlagged()
+        
+    #    print("Matching patterns...")
+    #    MatchPatterns()
 
     print("Setting Tile Material Index...")
     SetTileMaterialIndex()
