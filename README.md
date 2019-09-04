@@ -1,3 +1,3 @@
 # minesweeper-blender
 
-A conversion of POV-Ray SDL code to Python 3 in Blender
+A conversion to Python 3 from POV-Ray SDL code to run in Blender
