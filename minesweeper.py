@@ -55,10 +55,15 @@ def IsFlagged(i, j):
 
 def SetTile(i, j, e):
     grid[i][j] = e
-#    frame = bpy.context.scene.frame_current + 1
-#    bpy.context.scene.frame_set(frame)
-#    tile = bpy.data.objects["MineTile." + str(i) + "." + str(j)]
-#    tile.keyframe_insert("pass_index")
+    frame = bpy.context.scene.frame_current + 1
+    bpy.context.scene.frame_set(frame)
+    pi = GetMaterialIndex(i, j)
+    tile = bpy.data.objects["MineTile." + str(i) + "." + str(j)]
+    tile.pass_index = pi
+    tile.keyframe_insert("pass_index")
+    for fcurve in tile.animation_data.action.fcurves:
+        kf = fcurve.keyframe_points[-1]
+        kf.interpolation = 'CONSTANT'
 
 
 def InitGrid():
@@ -325,27 +330,38 @@ def CreateMaterial():
     links.new(nodeA.outputs[2], node9.inputs[0])
 
 
-def SetTileMaterialIndex():
+def GetMaterialIndex(i, j):
+    pi = e_null
+    if grid[i][j] & b_blank and not grid[i][j] & b_flag:
+        pi = 9
+    elif grid[i][j] & b_flag:
+        pi = 10
+    else:
+        pi = grid[i][j]
+
+    return pi
+
+
+def SetTilesMaterialIndex():
     for i in range(col):
         for j in range(row):
-            if grid[i][j] & b_blank and not grid[i][j] & b_flag:
-                pi = 9
-            elif grid[i][j] & b_flag:
-                pi = 10
-            else:
-                pi = grid[i][j]
-
+            pi = GetMaterialIndex(i, j)
             tile = bpy.data.objects["MineTile." + str(i) + "." + str(j)]
             tile.pass_index = pi
 
 
-def SetKeyframes():
+def SetInitialKeyframes():
+    bpy.context.scene.frame_set(1)
     for i in range(col):
         for j in range(row):
             tile = bpy.data.objects["MineTile." + str(i) + "." + str(j)]
             tile.keyframe_insert("pass_index")
-            # tile.interpolation = 'Constant'
+            for fcurve in tile.animation_data.action.fcurves:
+                kf = fcurve.keyframe_points[-1]
+                kf.interpolation = 'CONSTANT'
 
+    
+    
 
 def RandomPress():
     x = 0
@@ -379,9 +395,15 @@ def Scene():
     print("Creating tile objects...")
     CreateTileObjects()
 
+    print("Setting Tile Material Index...")
+    SetTilesMaterialIndex()
+
+    print("Setting keyframes...")
+    SetInitialKeyframes()
+
     grid[14][0] ^= b_blank
 
-    for i in range(14):
+    for i in range(12):
         print("Matching blanks...")
         MatchBlank()
         
@@ -394,12 +416,6 @@ def Scene():
     #    print("Matching patterns...")
     #    MatchPatterns()
 
-    print("Setting Tile Material Index...")
-    SetTileMaterialIndex()
-    # bpy.context.scene.frame_set()
-
-    print("Setting keyframes...")
-    SetKeyframes()
 
     print("script complete\n")
 
