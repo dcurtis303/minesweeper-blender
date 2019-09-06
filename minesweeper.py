@@ -11,7 +11,7 @@ game_board = [ 15, 8, 32 ]
 # game_board = [ 6, 4, 6 ]
 # game_board = [ 4, 4, 2 ]
 
-game_seed = 1
+game_seed = 2
 
 e_null = 13
 e_mine = 12
@@ -395,13 +395,15 @@ def Scene():
     print("Creating tile objects...")
     CreateTileObjects()
 
+
+    grid[5][0] ^= b_blank
+
+
     print("Setting Tile Material Index...")
     SetTilesMaterialIndex()
 
     print("Setting keyframes...")
     SetInitialKeyframes()
-
-    grid[14][0] ^= b_blank
 
     for i in range(12):
         print("Matching blanks...")
