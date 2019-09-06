@@ -28,6 +28,7 @@ grid = [[e_null for x in range(row)] for y in range(col)]
 col_i = col - 1
 row_i = row - 1
 
+changes = 0
 
 def IsNumber(i, j):
     b = grid[i][j] > 0 and grid[i][j] <= 8
@@ -53,7 +54,11 @@ def IsFlagged(i, j):
     return b
 
 
-def SetTile(i, j, e):
+def SetTile(i, j, e, who):
+    global changes
+    changes += 1
+    prt = "{} : {},{} = {} <- {}"
+    print(prt.format(changes, i, j, e, who))
     grid[i][j] = e
     frame = bpy.context.scene.frame_current + 1
     bpy.context.scene.frame_set(frame)
@@ -123,7 +128,7 @@ def RevealAdjacentTiles(i, j):
     for ip in range(nis, nie + 1):
         for jp in range(njs, nje + 1):
             if IsUnrevealed(ip, jp) and not IsFlagged(ip, jp):
-                SetTile(ip, jp, grid[ip][jp] ^ b_blank)
+                SetTile(ip, jp, grid[ip][jp] ^ b_blank, ".RevealAdjacentTiles")
 
 
 def CountAdjacent_Unrevealed(i, j):
@@ -158,18 +163,6 @@ def CountAdjacent_Flagged(i, j):
     return caf_cnt
 
 
-def RevealAdjacentTiles(i, j):
-    nis = 0 if i == 0 else i - 1
-    nie = col_i if i == col_i else i + 1
-    njs = 0 if j == 0 else j - 1
-    nje = row_i if j == row_i else j + 1
-    
-    for ip in range(nis, nie + 1):
-        for jp in range(njs, nje + 1):
-            if IsUnrevealed(ip, jp):
-                SetTile(ip, jp, grid[ip][jp] ^ b_blank)
-
-
 def MatchUnrevealed():
     for i in range(col):
         for j in range(row):
@@ -187,6 +180,60 @@ def MatchFlagged():
                 mf_cnt = CountAdjacent_Flagged(i, j)
                 if grid[i][j] == mf_cnt:
                     RevealAdjacentTiles(i, j)
+
+
+lau1 = [(0, 0) for x in range(8)] 
+lau2 = [(0, 0) for x in range(8)] 
+def ListAdjacent_Unrevealed(i, j, list):
+    lau_cnt = 0
+
+    nis = 0 if i == 0 else i - 1
+    nie = col_i if i == col_i else i + 1
+    njs = 0 if j == 0 else j - 1
+    nje = row_i if j == row_i else j + 1
+    
+    for ip in range(nis, nie + 1):
+        for jp in range(njs, nje + 1):
+            if not ip == i and jp == j:
+                if IsUnrevealed(ip, jp):
+                    if list == 1:
+                        lau1[lau_cnt] = (ip, jp)
+                    else:
+                        lau2[lau_cnt] = (ip, jp)
+                    lau_cnt += 1
+
+    return lau_cnt
+
+
+def InLAUList1(i, j, c1):
+    ill1 = False
+    r = 0
+    while r < c1:
+        if lau1[r][0] == i and lau1[r][1] == j:
+            ill1 = True
+        r += 1
+
+    return ill1
+
+
+def CompareLAULists(c1, c2):
+    cll_cnt = 0
+    r = 0
+    while r < c2:
+        if InLAUList1(lau2[r][0], lau2[r][1], c1):
+            cll_cnt += 1
+        r += 1
+    return cll_cnt
+
+
+def RevealLAUList2(c1, c2):
+    r = 0
+    while r < c2:
+        if not InLAUList1(lau2[r][0], lau2[r][1], c1):
+            i = lau2[r][0]
+            j = lau2[r][1]
+            SetTile(i, j, grid[i][j] ^ b_blank, ".RevealLAUList2")
+        r += 1
 
 
 def MatchPatterns():
@@ -211,7 +258,7 @@ def MatchPatterns():
                                 t2_cnt = ListAdjacent_Unrevealed(ip, jp, 2)
                                 match_cnt = CompareLAULists(t1_cnt, t2_cnt)
                                 if match_cnt == t1_cnt:
-                                    if grid[ip][jp][gm] == m2_cnt + 1:
+                                    if grid[ip][jp] == m2_cnt + 1:
                                         RevealLAUList2(t1_cnt, t2_cnt)
 
 
@@ -237,7 +284,7 @@ def FlagAdjacentMines(i, j):
     for ip in range(nis, nie + 1):
         for jp in range(njs, nje + 1):
             if IsUnrevealed(ip, jp):
-                SetTile(ip, jp, grid[ip][jp] | b_flag)
+                SetTile(ip, jp, grid[ip][jp] | b_flag, ".FlagAdjacentMines")
 
 
 def ResetScene():
@@ -256,6 +303,10 @@ def ResetScene():
     for img in bpy.data.images:
         if img.name.startswith("tiles"):
             bpy.data.images.remove(img)
+            
+    for a in bpy.data.actions:
+        if not a.users:
+            bpy.data.actions.remove(a)
 
 
 def CreateTileObjects():
@@ -408,15 +459,15 @@ def Scene():
     for i in range(12):
         print("Matching blanks...")
         MatchBlank()
-        
+
         print("Matching Unrevealed...")
         MatchUnrevealed()
 
         print("Matching flagged...")
         MatchFlagged()
-        
-    #    print("Matching patterns...")
-    #    MatchPatterns()
+
+        print("Matching patterns...")
+        MatchPatterns()
 
 
     print("script complete\n")
