@@ -5,13 +5,13 @@ clean_scene = False
 show_entries = False
 
 
-# game_board = [ 100, 100, 1000 ]
-# game_board = [ 30, 16, 99 ]
-game_board = [ 15, 8, 32 ]
-# game_board = [ 6, 4, 6 ]
-# game_board = [ 4, 4, 2 ]
+#game_board = [ 100, 100, 1000 ]
+#game_board = [ 30, 16, 99 ]
+#game_board = [ 15, 8, 32 ]
+game_board = [ 8, 5, 6 ]
+#game_board = [ 4, 4, 2 ]
 
-game_seed = 4
+game_seed = 12
 
 e_null = 13
 e_mine = 12
@@ -103,20 +103,10 @@ def CountAdjacentMines(i, j):
 
 
 def MatchBlank():
-    times = 0
-    while True:
-        found = False
-        for i in range(col):
-            for j in range(row):
-                if (grid[i][j] == 0):
-                    RevealAdjacentTiles(i, j)
-                    found = True
-
-        times += 1
-        if found == False:
-            return
-        if times > 10:
-            return
+    for i in range(col):
+        for j in range(row):
+            if grid[i][j] == 0:
+                RevealAdjacentTiles(i, j)
 
 
 def RevealAdjacentTiles(i, j):
@@ -184,7 +174,7 @@ def MatchFlagged():
 
 lau1 = [(0, 0) for x in range(8)] 
 lau2 = [(0, 0) for x in range(8)] 
-def ListAdjacent_Unrevealed(i, j, list):
+def ListAdjacentUnrevealed(i, j, list):
     lau_cnt = 0
 
     nis = 0 if i == 0 else i - 1
@@ -192,9 +182,10 @@ def ListAdjacent_Unrevealed(i, j, list):
     njs = 0 if j == 0 else j - 1
     nje = row_i if j == row_i else j + 1
     
+    print(lau1)
     for ip in range(nis, nie + 1):
         for jp in range(njs, nje + 1):
-            if not ip == i and jp == j:
+            if not (ip == i and jp == j):
                 if IsUnrevealed(ip, jp):
                     if list == 1:
                         lau1[lau_cnt] = (ip, jp)
@@ -251,14 +242,15 @@ def MatchPatterns():
                 for ip in range(nis, nie + 1):
                     for jp in range(njs, nje + 1):
 
-                        if not ip == i and jp == j:
+                        if not (ip == i and jp == j):
                             m2_cnt = IsMissingFlags(ip, jp)
                             if m2_cnt != -1:
-                                t1_cnt = ListAdjacent_Unrevealed(i, j, 1)
-                                t2_cnt = ListAdjacent_Unrevealed(ip, jp, 2)
+                                t1_cnt = ListAdjacentUnrevealed(i, j, 1)
+                                t2_cnt = ListAdjacentUnrevealed(ip, jp, 2)
                                 match_cnt = CompareLAULists(t1_cnt, t2_cnt)
                                 if match_cnt == t1_cnt:
                                     if grid[ip][jp] == m2_cnt + 1:
+                                        print("{},{},{}".format(match_cnt, t1_cnt, t2_cnt))
                                         RevealLAUList2(t1_cnt, t2_cnt)
 
 
@@ -300,13 +292,13 @@ def ResetScene():
         if material.name.startswith("MineTile"):
             bpy.data.materials.remove(material)
 
-    for img in bpy.data.images:
-        if img.name.startswith("tiles"):
-            bpy.data.images.remove(img)
+    for image in bpy.data.images:
+        if image.name.startswith("tiles"):
+            bpy.data.images.remove(image)
             
-    for a in bpy.data.actions:
-        if not a.users:
-            bpy.data.actions.remove(a)
+    for action in bpy.data.actions:
+        if not action.users:
+            bpy.data.actions.remove(action)
 
 
 def CreateTileObjects():
@@ -447,7 +439,7 @@ def Scene():
     CreateTileObjects()
 
 
-    grid[5][0] ^= b_blank
+    grid[1][1] ^= b_blank
 
 
     print("Setting Tile Material Index...")
@@ -456,7 +448,7 @@ def Scene():
     print("Setting keyframes...")
     SetInitialKeyframes()
 
-    for i in range(1):
+    for i in range(1, 5):
         print("Iteration {}".format(i))
         
         print("Matching blanks...")
