@@ -6,9 +6,9 @@ show_entries = False
 
 
 #game_board = [ 100, 100, 1000 ]
-#game_board = [ 30, 16, 99 ]
+game_board = [ 30, 16, 99 ]
 #game_board = [ 15, 8, 32 ]
-game_board = [ 14, 8, 20 ]
+#game_board = [ 8, 5, 10 ]
 #game_board = [ 4, 4, 2 ]
 
 game_seed = 1
@@ -180,14 +180,14 @@ def ListAdjacentUnrevealed(i, j, list):
     for ip in range(nis, nie + 1):
         for jp in range(njs, nje + 1):
             if not (ip == i and jp == j):
-                if IsUnrevealed(ip, jp):
+                if IsUnrevealed(ip, jp) and not IsFlagged(ip, jp):
                     if list == 1:
                         lau1[lau_cnt] = (ip, jp)
                     else:
                         lau2[lau_cnt] = (ip, jp)
                     lau_cnt += 1
 
-    print("LAU: {} {} {}".format(i, j, list))
+    #print("LAU: {} {} {}".format(i, j, list))
 
     return lau_cnt
 
@@ -223,13 +223,12 @@ def RevealLAUList2(c1, c2):
         r += 1
 
 
-def MatchPatterns():
+def MatchPatterns1():
     for i in range(col):
         for j in range(row):
         
             m1_cnt = IsMissingFlags(i, j)
             if m1_cnt != -1:
-                    
                 nis = 0 if i == 0 else i - 1
                 nie = col_i if i == col_i else i + 1
                 njs = 0 if j == 0 else j - 1
@@ -237,7 +236,6 @@ def MatchPatterns():
 
                 for ip in range(nis, nie + 1):
                     for jp in range(njs, nje + 1):
-
                         if not (ip == i and jp == j):
                             m2_cnt = IsMissingFlags(ip, jp)
                             if m2_cnt != -1:
@@ -247,6 +245,14 @@ def MatchPatterns():
                                 if match_cnt == t1_cnt:
                                     if grid[ip][jp] == m2_cnt + 1:
                                         RevealLAUList2(t1_cnt, t2_cnt)
+
+
+def MatchPatterns2():
+    for i in range(col):
+        for j in range(row):
+            if IsMissingFlags(i, j) != -1:
+                if grid[i][j] == CountAdjacentUnrevealed(i, j):
+                    FlagAdjacentMines(i, j)
 
 
 def IsMissingFlags(i, j):
@@ -438,11 +444,11 @@ def Scene():
 
 
     if not show_entries:
-        i = 0
-        j = 3
+        i = 5
+        j = 12
         SetTile(i, j, grid[i][j] ^ b_blank, "Initial reveal")
 
-        for i in range(1, 6):
+        for i in range(1, 15):
             print("Iteration {}".format(i))
             
             print("Matching blanks...")
@@ -454,8 +460,11 @@ def Scene():
             print("Matching flagged...")
             MatchFlagged()
 
-            print("Matching patterns...")
-            MatchPatterns()
+            print("Matching patterns - 1...")
+            MatchPatterns1()
+
+            print("Matching patterns - 2...")
+            MatchPatterns2()
 
 
     print("script complete\n")
