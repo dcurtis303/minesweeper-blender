@@ -7,11 +7,11 @@ show_entries = False
 
 #game_board = [ 100, 100, 1000 ]
 #game_board = [ 30, 16, 99 ]
-game_board = [ 15, 8, 32 ]
+game_board = [ 15, 8, 20 ]
 #game_board = [ 8, 5, 10 ]
 #game_board = [ 4, 4, 2 ]
 
-game_seed = 13
+game_seed = 9146 #randint(1, 9999)
 
 i_null = 13
 i_mine = 12
@@ -46,7 +46,7 @@ def SetTile(i, j, e, who):
     
     changes += 1
     frame = bpy.context.scene.frame_current
-    prt = "{}-{} : {},{} = {} <- {}"
+    prt = "{} : {},{} = {} <- {}"
     entry = str(e & 0x3f)
     if (e & 0x3f) == i_mine:
         entry += ", mine"
@@ -54,7 +54,7 @@ def SetTile(i, j, e, who):
         entry += ", blank"
     if e & b_flag:
         entry += ", flag"
-    print(prt.format(frame, changes, i, j, entry, who))
+    print(prt.format(changes, i, j, entry, who))
     grid[i][j] = e
     pi = GetMaterialIndex(i, j)
     tile = bpy.data.objects["MineTile." + str(i) + "." + str(j)]
@@ -419,8 +419,8 @@ def RandomPress():
     while True:
         i = randint(0, col_i)
         j = randint(0, row_i)
-        if grid[i][j] & b_blank:
-            grid[i][j] ^= b_blank
+        if grid[i][j] & b_blank and not grid[i][j] & b_flag:
+            SetTile(i, j, grid[i][j] ^ b_blank, "Random Press")
             break
         x += 1
         if x > col * row:
@@ -434,7 +434,8 @@ def Scene():
     if clean_scene:
         return
 
-
+    
+    print("Setting seed: {}".format(game_seed))
     seed(game_seed)
 
     print("Creating Material...")
@@ -454,12 +455,15 @@ def Scene():
 
 
     if not show_entries:
-        i = 0
-        j = 0
-        SetTile(i, j, grid[i][j] ^ b_blank, "Initial reveal")
+        # i = 0
+        # j = 0
+        # SetTile(i, j, grid[i][j] ^ b_blank, "Initial reveal")
+
+        RandomPress()
 
         for i in range(1, 15):
-            print("Iteration {}".format(i))
+            c = changes
+            print("Iteration: {}, total changes: {}".format(i, c))
             
             print("Matching blanks...")
             MatchBlank()
@@ -475,6 +479,9 @@ def Scene():
 
             print("Matching patterns - 2...")
             MatchPatterns2()
+            
+            if changes == c:
+                break
 
 
     print("script complete\n")
