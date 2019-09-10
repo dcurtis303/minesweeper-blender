@@ -6,15 +6,15 @@ show_entries = False
 
 
 #game_board = [ 100, 100, 1000 ]
-game_board = [ 30, 16, 99 ]
-#game_board = [ 15, 8, 32 ]
+#game_board = [ 30, 16, 99 ]
+game_board = [ 15, 8, 32 ]
 #game_board = [ 8, 5, 10 ]
 #game_board = [ 4, 4, 2 ]
 
-game_seed = 1
+game_seed = 13
 
-e_null = 13
-e_mine = 12
+i_null = 13
+i_mine = 12
 
 b_blank = 0x80
 b_flag  = 0x40
@@ -23,7 +23,7 @@ col   = game_board[0]
 row   = game_board[1]
 mines = game_board[2]
 
-grid = [[e_null for x in range(row)] for y in range(col)]
+grid = [[i_null for x in range(row)] for y in range(col)]
 
 col_i = col - 1
 row_i = row - 1
@@ -32,7 +32,7 @@ changes = 0
 
 def IsNumber(i, j):     return grid[i][j] >= 0 and grid[i][j] <= 8
 
-def IsMine(i, j):       return grid[i][j] == e_mine
+def IsMine(i, j):       return grid[i][j] == i_mine
 
 def IsRevealed(i, j):   return not IsUnrevealed(i, j)
 
@@ -48,7 +48,7 @@ def SetTile(i, j, e, who):
     frame = bpy.context.scene.frame_current
     prt = "{}-{} : {},{} = {} <- {}"
     entry = str(e & 0x3f)
-    if (e & 0x3f) == e_mine:
+    if (e & 0x3f) == i_mine:
         entry += ", mine"
     if e & b_blank:
         entry += ", blank"
@@ -68,11 +68,23 @@ def SetTile(i, j, e, who):
 
 def InitGrid():
     for i in range(mines):
-        grid[randint(0, col_i)][randint(0, row_i)] = e_mine
+        while True:
+            new_i = randint(0, col_i)
+            new_j = randint(0, row_i)
+            if grid[new_i][new_j] != i_mine:
+                grid[new_i][new_j] = i_mine
+                break
+
+    mcnt = 0
+    for i in range(col):
+        for j in range(row):
+            if grid[i][j] == i_mine:
+                mcnt += 1
+    print("Mine Count: {}".format(mcnt))
 
     for i in range(col):
         for j in range(row):
-            if (grid[i][j] != e_mine):
+            if (grid[i][j] != i_mine):
                 grid[i][j] = CountAdjacentMines(i, j)
 
     if not show_entries:
@@ -186,8 +198,6 @@ def ListAdjacentUnrevealed(i, j, list):
                     else:
                         lau2[lau_cnt] = (ip, jp)
                     lau_cnt += 1
-
-    #print("LAU: {} {} {}".format(i, j, list))
 
     return lau_cnt
 
@@ -372,7 +382,7 @@ def CreateMaterial():
 
 
 def GetMaterialIndex(i, j):
-    pi = e_null
+    pi = i_null
     if grid[i][j] & b_blank and not grid[i][j] & b_flag:
         pi = 9
     elif grid[i][j] & b_flag:
@@ -401,8 +411,8 @@ def SetInitialKeyframes():
                 kf = fcurve.keyframe_points[-1]
                 kf.interpolation = 'CONSTANT'
 
-    
-    
+    bpy.context.scene.frame_set(2)
+
 
 def RandomPress():
     x = 0
@@ -444,8 +454,8 @@ def Scene():
 
 
     if not show_entries:
-        i = 5
-        j = 12
+        i = 0
+        j = 0
         SetTile(i, j, grid[i][j] ^ b_blank, "Initial reveal")
 
         for i in range(1, 15):
