@@ -6,15 +6,16 @@ show_entries = False
 
 
 #game_board = [ 100, 100, 1000 ]
-#game_board = [ 30, 16, 99 ]
-game_board = [ 15, 8, 20 ]
+game_board = [ 30, 16, 99 ]
+#game_board = [ 15, 8, 20 ]
 #game_board = [ 8, 5, 10 ]
 #game_board = [ 4, 4, 2 ]
 
-game_seed = 9146 #randint(1, 9999)
+game_seed = randint(1, 9999)
 
 i_null = 13
 i_mine = 12
+i_ender = 11
 
 b_blank = 0x80
 b_flag  = 0x40
@@ -426,15 +427,28 @@ def RandomPress():
         if x > col * row:
             break
 
+    return (i, j)
+
+
+def CountAllFlagged():
+    flagged = 0
+    for i in range(col):
+        for j in range(row):
+            if grid[i][j] & b_flag:
+                flagged += 1
+
+    return flagged
+
 
 def Scene():
+    playing = True
+    
     print("\n\nResetting Scene...")
     ResetScene()
 
     if clean_scene:
         return
 
-    
     print("Setting seed: {}".format(game_seed))
     seed(game_seed)
 
@@ -454,14 +468,20 @@ def Scene():
     SetInitialKeyframes()
 
 
-    if not show_entries:
-        # i = 0
-        # j = 0
-        # SetTile(i, j, grid[i][j] ^ b_blank, "Initial reveal")
+    if show_entries:
+        return
 
-        RandomPress()
+    while playing:
+        rp = RandomPress()
 
-        for i in range(1, 15):
+        if grid[rp[0]][rp[1]] == i_mine:
+            SetTile(rp[0], rp[1], i_ender, "Pressed mine")
+            playing = False
+            break
+
+        i = 0
+        while playing:
+            i += 1
             c = changes
             print("Iteration: {}, total changes: {}".format(i, c))
             
@@ -483,7 +503,12 @@ def Scene():
             if changes == c:
                 break
 
+            if CountAllFlagged() == game_board[2]:
+                playing = False
 
+
+    bpy.context.scene.frame_end = bpy.context.scene.frame_current
+    
     print("script complete\n")
 
 
