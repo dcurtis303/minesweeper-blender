@@ -1,5 +1,6 @@
 import bpy
 from random import randint, seed
+from datetime import datetime
 
 clean_scene = False
 reset_scene = False
@@ -11,8 +12,10 @@ game_board = [ 30, 16, 99 ]
 #game_board = [ 8, 5, 10 ]
 #game_board = [ 4, 4, 2 ]
 
-#game_seed = randint(1, 9999)
-game_seed = 3358
+game_seed = datetime.now().microsecond
+# winners: 611870, 6253, 1066, 3358, 76839
+
+verbosity = 1
 
 i_null = 13
 i_mine = 12
@@ -56,7 +59,9 @@ def SetTile(i, j, e, who):
         entry += ", blank"
     if e & b_flag:
         entry += ", flag"
-    print(prt.format(changes, i, j, entry, who))
+
+    if verbosity > 1:
+        print(prt.format(changes, i, j, entry, who))
     grid[i][j] = e
     pi = GetMaterialIndex(i, j)
     tile = bpy.data.objects["MineTile." + str(i) + "." + str(j)]
@@ -446,8 +451,20 @@ def CountAllFlagged():
     return flagged
 
 
+def AllClear():
+    for i in range(col):
+        for j in range(row):
+            if grid[i][j] & b_blank and not grid[i][j] & b_flag:
+                return False;
+
+    return True
+
+
+
+
 def Scene():
     playing = True
+    presses = 0
     
     if reset_scene:
         print("\n\nResetting Scene...")
@@ -465,16 +482,20 @@ def Scene():
     InitGrid()
 
     if reset_scene:
-        print("Creating Material...")
+        if verbosity > 2:
+            print("Creating Material...")
         CreateMaterial()
 
-        print("Creating tile objects...")
+        if verbosity > 2:
+            print("Creating tile objects...")
         CreateTileObjects()
 
-    print("Setting Tile Material Index...")
+    if verbosity > 2:
+        print("Setting Tile Material Index...")
     SetTilesMaterialIndex()
 
-    print("Setting keyframes...")
+    if verbosity > 2:
+        print("Setting keyframes...")
     SetInitialKeyframes()
 
 
@@ -483,6 +504,7 @@ def Scene():
 
     while playing:
         rp = RandomPress()
+        presses += 1
 
         if grid[rp[0]][rp[1]] == i_mine:
             SetTile(rp[0], rp[1], i_ender, "Pressed mine")
@@ -493,27 +515,34 @@ def Scene():
         while playing:
             i += 1
             c = changes
-            print("Iteration: {}, total changes: {}".format(i, c))
+            print("Press: {}, Iteration: {}, total changes: {}".format(presses, i, c))
             
-            print("Matching blanks...")
+            if verbosity > 2:
+                print("Matching blanks...")
             MatchBlank()
 
-            print("Matching Unrevealed...")
+            if verbosity > 2:
+                print("Matching Unrevealed...")
             MatchUnrevealed()
 
-            print("Matching flagged...")
+            if verbosity > 2:
+                print("Matching flagged...")
             MatchFlagged()
 
-            print("Matching patterns - 1...")
+            if verbosity > 2:
+                print("Matching patterns - 1...")
             MatchPatterns1()
 
-            print("Matching patterns - 2...")
+            if verbosity > 2:
+                print("Matching patterns - 2...")
             MatchPatterns2()
             
-            if changes == c:
+            if c == changes:
                 break
 
-            if CountAllFlagged() == game_board[2]:
+            #if CountAllFlagged() == game_board[2]:
+            if AllClear():
+                print("Game Won!")
                 playing = False
 
 
