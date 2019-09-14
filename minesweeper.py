@@ -2,8 +2,8 @@ import bpy
 from random import randint, seed
 
 clean_scene = False
+reset_scene = False
 show_entries = False
-
 
 #game_board = [ 100, 100, 1000 ]
 game_board = [ 30, 16, 99 ]
@@ -11,7 +11,8 @@ game_board = [ 30, 16, 99 ]
 #game_board = [ 8, 5, 10 ]
 #game_board = [ 4, 4, 2 ]
 
-game_seed = randint(1, 9999)
+#game_seed = randint(1, 9999)
+game_seed = 3358
 
 i_null = 13
 i_mine = 12
@@ -310,6 +311,11 @@ def ResetScene():
             bpy.data.actions.remove(action)
 
 
+def RemoveTileActions():
+    for action in bpy.data.actions:
+        bpy.data.actions.remove(action)
+
+
 def CreateTileObjects():
     first = True
     for i in range(col):
@@ -443,8 +449,11 @@ def CountAllFlagged():
 def Scene():
     playing = True
     
-    print("\n\nResetting Scene...")
-    ResetScene()
+    if reset_scene:
+        print("\n\nResetting Scene...")
+        ResetScene()
+    else:
+        RemoveTileActions()
 
     if clean_scene:
         return
@@ -452,14 +461,15 @@ def Scene():
     print("Setting seed: {}".format(game_seed))
     seed(game_seed)
 
-    print("Creating Material...")
-    CreateMaterial()
-
     print("Initializing grid...")
     InitGrid()
 
-    print("Creating tile objects...")
-    CreateTileObjects()
+    if reset_scene:
+        print("Creating Material...")
+        CreateMaterial()
+
+        print("Creating tile objects...")
+        CreateTileObjects()
 
     print("Setting Tile Material Index...")
     SetTilesMaterialIndex()
