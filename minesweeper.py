@@ -13,9 +13,9 @@ game_board = [ 30, 16, 99 ]
 #game_board = [ 4, 4, 2 ]
 
 game_seed = datetime.now().microsecond
-# winners: 611870, 6253, 1066, 3358, 76839
+# winners: 611870, 6253, 1066, 3358, 76839, 160833, 532148
 
-verbosity = 1
+verbosity = 3
 
 i_null = 13
 i_mine = 12
