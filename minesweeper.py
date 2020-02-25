@@ -2,20 +2,21 @@ import bpy
 from random import randint, seed
 from datetime import datetime
 
-clean_scene = False
-reset_scene = False
-show_entries = False
 
-#game_board = [ 100, 100, 1000 ]
+###########################################################
+## Script controls
+
+clean_scene = False # cleanup scene, don't run game
+reset_scene = False # delete all resources created 
+show_values = False # show actual tile value
+
 game_board = [ 30, 16, 99 ]
-#game_board = [ 15, 8, 20 ]
-#game_board = [ 8, 5, 10 ]
-#game_board = [ 4, 4, 2 ]
 
 game_seed = datetime.now().microsecond
 # winners: 611870, 6253, 1066, 3358, 76839, 160833, 532148
+# game_seed = 532148
 
-verbosity = 3
+verbosity = 3 # verbosity: low to high (0-3)
 
 i_null = 13
 i_mine = 12
@@ -35,6 +36,10 @@ row_i = row - 1
 
 changes = 0
 
+
+###########################################################
+## Type macros
+
 def IsNumber(i, j):     return grid[i][j] >= 0 and grid[i][j] <= 8
 
 def IsMine(i, j):       return grid[i][j] == i_mine
@@ -51,7 +56,6 @@ def SetTile(i, j, e, who):
     
     changes += 1
     frame = bpy.context.scene.frame_current
-    prt = "{} : {},{} = {} <- {}"
     entry = str(e & 0x3f)
     if (e & 0x3f) == i_mine:
         entry += ", mine"
@@ -61,6 +65,7 @@ def SetTile(i, j, e, who):
         entry += ", flag"
 
     if verbosity > 1:
+        prt = "{} : {},{} = {} <- {}"
         print(prt.format(changes, i, j, entry, who))
     grid[i][j] = e
     pi = GetMaterialIndex(i, j)
@@ -94,7 +99,7 @@ def InitGrid():
             if (grid[i][j] != i_mine):
                 grid[i][j] = CountAdjacentMines(i, j)
 
-    if not show_entries:
+    if not show_values:
         for i in range(col):
             for j in range(row):
                 grid[i][j] |= b_blank
@@ -499,7 +504,7 @@ def Scene():
     SetInitialKeyframes()
 
 
-    if show_entries:
+    if show_values:
         return
 
     while playing:
