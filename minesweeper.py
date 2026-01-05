@@ -376,9 +376,9 @@ def CreateMaterial():
     node9.location = (node7.location[0] - node8.width - dx, 0)
     nodeA.location = (node8.location[0] - node9.width - dx, 0)
 
-    node2.inputs[5].default_value = 0
+#    node2.inputs[5].default_value = 0
     node2.inputs[7].default_value = 0
-    node3.image = bpy.data.images.load("tiles.png")
+    node3.image = bpy.data.images.load("//tiles.png")
     node3.interpolation = 'Closest'
     node6.operation = 'MULTIPLY'
     node6.inputs[0].default_value = 1 / 14
@@ -391,7 +391,7 @@ def CreateMaterial():
     links.new(node5.outputs[0], node4.inputs[0])
     links.new(node6.outputs[0], node5.inputs[1])
     links.new(node7.outputs[0], node5.inputs[0])
-    links.new(node8.outputs[1], node7.inputs[1])
+    links.new(node8.outputs[3], node7.inputs[1])
     links.new(node9.outputs[0], node6.inputs[1])
     links.new(node9.outputs[1], node4.inputs[1])
     links.new(node9.outputs[2], node4.inputs[2])
