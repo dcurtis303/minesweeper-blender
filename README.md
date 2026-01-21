@@ -1,3 +1,3 @@
 # minesweeper-blender
 
-A conversion to Python 3 from POV-Ray SDL code to run in Blender
+i built a scene to show off my solver algorithm. It was a conversion from the initial POV-Ray SDL code, that graphically ran to show a game play, to run in Blender!
